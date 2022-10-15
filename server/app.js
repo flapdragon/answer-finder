@@ -1,14 +1,38 @@
+require('dotenv').config()
 const express = require('express')
 const ws = require('ws')
+const https = require('https')
 
 const app = express()
 const port = 3000
+
+// Quizzes route
+app.get('/quizzes/:quiz', (req, res) => {
+  console.log(req.params)
+  const quiz = req.params.quiz.toLowerCase().replace(' assessment', '').replace(/\s/g, '-')
+  const quizURL = `${process.env.QUIZ_URL_PART_1}/${quiz}/${quiz}-${process.env.QUIZ_URL_PART_2}`
+  console.log(quiz, quizURL)
+
+  // Find quiz, html response
+  https.get(quizURL, (resp) => {
+    let data = ''
+    resp.on('data', (chunk) => {
+      data += chunk
+    })
+
+    resp.on('end', () => {
+      res.send(data)
+    })
+
+  }).on("error", (err) => {
+    console.log("Error: " + err.message)
+  })
+})
 
 // Questions route
 app.get('/questions/:question', (req, res) => {
   res.send('Question')
 })
-// Example call: http://localhost:3000/questions/Which%20XML%20attribute%20should%20be%20used%20to%20make%20an%20Image%20View%20accessible%3F
 
 // Websocket server
 const wsServer = new ws.Server({ noServer: true })
