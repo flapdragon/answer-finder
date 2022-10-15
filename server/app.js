@@ -4,25 +4,22 @@ const ws = require('ws')
 const app = express()
 const port = 3000
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
+// Questions route
+app.get('/questions/:question', (req, res) => {
+  res.send('Question')
 })
+// Example call: http://localhost:3000/questions/Which%20XML%20attribute%20should%20be%20used%20to%20make%20an%20Image%20View%20accessible%3F
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
-
-// Set up a headless websocket server that prints any
-// events that come in.
+// Websocket server
 const wsServer = new ws.Server({ noServer: true })
 wsServer.on('connection', socket => {
-  socket.on('message', message => console.log(message))
+  socket.on('message', message => {
+    // console.log(message)
+  })
 })
 
-// `server` is a vanilla Node.js HTTP server, so use
-// the same ws upgrade process described here:
-// https://www.npmjs.com/package/ws#multiple-servers-sharing-a-single-https-server
-const server = app.listen(3003)
+// Express server
+const server = app.listen(port)
 server.on('upgrade', (request, socket, head) => {
   wsServer.handleUpgrade(request, socket, head, socket => {
     wsServer.emit('connection', socket, request)
